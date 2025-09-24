@@ -10,8 +10,55 @@
     <h3>Classe : <span th:text="${classe.nomClasse}"></span></h3>
     <p>Effectifs de la classe : <span th:text="${classe.effectifs}"></span></p>
 
+    <hr/>
+
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
     <h4>Ajouter des étudiants</h4>
-    <p>C'est ici que vous pourrez gérer la liste de vos étudiants.</p>
+    <form th:action="@{/enseignant/classe/{classeId}/add-etudiant(classeId=${classe.id})}" method="post">
+        <div class="mb-3">
+            <label for="etudiant" class="form-label">Sélectionner un étudiant à ajouter</label>
+            <select name="etudiantId" class="form-control" id="etudiant" required>
+                <option value="">-- Sélectionnez un étudiant --</option>
+                <option th:each="etudiant : ${etudiantsDisponibles}"
+                        th:value="${etudiant.id}"
+                        th:text="${etudiant.user.firstname + ' ' + etudiant.user.lastname}">
+                </option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Ajouter l'étudiant</button>
+    </form>
+
+    <hr/>
+
+    <h4>Étudiants de la classe</h4>
+    <table class="table table-striped table-bordered mt-3">
+        <thead class="thead-dark">
+        <tr>
+            <th>ID de l'étudiant</th>
+            <th>Nom Complet</th>
+            <th>Email</th>
+            <th>Actions</th> </tr>
+        </thead>
+        <tbody>
+        <tr th:each="etudiant : ${etudiantsDeLaClasse}">
+            <td th:text="${etudiant.id}"></td>
+            <td th:text="${etudiant.user.firstname + ' ' + etudiant.user.lastname}"></td>
+            <td th:text="${etudiant.user.email}"></td>
+            <td>
+                <form th:action="@{/enseignant/classe/{classeId}/retirer-etudiant/{etudiantId}(classeId=${classe.id}, etudiantId=${etudiant.id})}" method="post">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir retirer cet étudiant de la classe ?');">
+                        Retirer
+                    </button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(etudiantsDeLaClasse)}">
+            <td colspan="4" class="text-center">Aucun étudiant n'est encore dans cette classe.</td>
+        </tr>
+        </tbody>
+    </table>
 
 </div>
 </body>

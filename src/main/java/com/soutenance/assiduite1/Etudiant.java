@@ -31,6 +31,21 @@ public class Etudiant {
         this.empreinteDigitale = empreinteDigitale;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "classe_id") // Nom de la colonne dans la base de données
+    private Classe classe;
+
+    // ... Getters et Setters existants ...
+
+    // Ajoutez les nouveaux Getters et Setters pour la classe
+    public Classe getClasse() {
+        return classe;
+    }
+
+    public void setClasse(Classe classe) {
+        this.classe = classe;
+    }
+
     public Long getId() {
         return id;
     }

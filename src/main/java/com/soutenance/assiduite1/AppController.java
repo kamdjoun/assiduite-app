@@ -50,7 +50,68 @@ public class AppController {
         }
 
         model.addAttribute("classe", classe);
+
+        // Récupérer la liste des étudiants de cette classe
+        List<Etudiant> etudiantsDeLaClasse = etudiantRepo.findByClasse(classe);
+        model.addAttribute("etudiantsDeLaClasse", etudiantsDeLaClasse);
+
+        // Récupérer la liste des étudiants qui n'ont pas encore de classe
+        List<Etudiant> etudiantsDisponibles = etudiantRepo.findByClasseIsNull();
+        model.addAttribute("etudiantsDisponibles", etudiantsDisponibles);
         return "enseignant_classe";
+    }
+
+
+    @PostMapping("/enseignant/classe/{classeId}/add-etudiant")
+    @PreAuthorize("hasRole('ENSEIGNANT')")
+    public String addEtudiantToClasse(@PathVariable("classeId") Long classeId,
+                                      @ModelAttribute("etudiantId") Long etudiantId,
+                                      RedirectAttributes ra) {
+        // Récupérer la classe et l'étudiant
+        Classe classe = classeRepo.findById(classeId).orElseThrow(() -> new IllegalArgumentException("Classe invalide"));
+        Etudiant etudiant = etudiantRepo.findById(etudiantId).orElseThrow(() -> new IllegalArgumentException("Étudiant invalide"));
+
+        // Vérifier si l'étudiant est déjà affecté à une classe
+        if (etudiant.getClasse() != null) {
+            ra.addFlashAttribute("error", "Cet étudiant est déjà affecté à une autre classe.");
+            return "redirect:/enseignant/classe/" + classeId;
+        }
+
+        // Affecter l'étudiant à la classe et sauvegarder
+        etudiant.setClasse(classe);
+        etudiantRepo.save(etudiant);
+
+        ra.addFlashAttribute("success", "L'étudiant a été ajouté avec succès à la classe.");
+        return "redirect:/enseignant/classe/" + classeId;
+    }
+
+    // Dans AppController.java
+
+    @PostMapping("/enseignant/classe/{classeId}/retirer-etudiant/{etudiantId}")
+    @PreAuthorize("hasRole('ENSEIGNANT')")
+    public String retirerEtudiantDeLaClasse(@PathVariable("classeId") Long classeId,
+                                            @PathVariable("etudiantId") Long etudiantId,
+                                            RedirectAttributes ra) {
+
+        // 1. Récupérer l'étudiant à partir de son ID
+        Etudiant etudiant = etudiantRepo.findById(etudiantId)
+                .orElseThrow(() -> new IllegalArgumentException("ID d'étudiant invalide:" + etudiantId));
+
+        // 2. Vérifier si l'étudiant est bien dans une classe
+        if (etudiant.getClasse() != null) {
+            // 3. Retirer l'affectation à la classe en mettant le champ à 'null'
+            etudiant.setClasse(null);
+            etudiantRepo.save(etudiant);
+
+            // 4. Ajouter un message de succès
+            ra.addFlashAttribute("success", "L'étudiant a été retiré de la classe avec succès.");
+        } else {
+            // 5. Ajouter un message d'erreur si l'étudiant n'est pas dans une classe
+            ra.addFlashAttribute("error", "Cet étudiant n'est pas affecté à une classe.");
+        }
+
+        // 6. Rediriger vers la page de la classe
+        return "redirect:/enseignant/classe/" + classeId;
     }
 
     @GetMapping("")
@@ -133,10 +194,30 @@ public class AppController {
     }
 
     @PostMapping("/save_user")
-    public String saveUser(User user) {
+    public String saveUser(@ModelAttribute("user") User user) {
+        // 1. Encoder le mot de passe avant de sauvegarder l'utilisateur
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        repo.save(user);
+
+        // 2. Sauvegarder l'utilisateur et récupérer l'objet sauvegardé
+        // C'est crucial car l'objet retourné contient l'ID généré
+        User savedUser = repo.save(user);
+
+        // 3. Vérifier le rôle de l'utilisateur
+        if ("ROLE_ENSEIGNANT".equals(user.getRole())) {
+            // Si le rôle est "ENSEIGNANT", créer une nouvelle entité Enseignant
+            Enseignant enseignant = new Enseignant();
+            enseignant.setUser(savedUser); // Lier l'enseignant à l'utilisateur
+            enseignantRepo.save(enseignant); // Sauvegarder l'entité Enseignant
+
+        } else if ("ROLE_ETUDIANT".equals(user.getRole())) {
+            // Si le rôle est "ETUDIANT", créer une nouvelle entité Etudiant
+            Etudiant etudiant = new Etudiant();
+            etudiant.setUser(savedUser); // Lier l'étudiant à l'utilisateur
+            etudiantRepo.save(etudiant); // Sauvegarder l'entité Etudiant
+        }
+
+        // 4. Rediriger l'utilisateur
         return "redirect:/list_users";
     }
 

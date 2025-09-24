@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>assiduite</title>
+</head>
+<body>
+<div class="container">
+    <div>
+        <h1>User registration - sign Up</h1>
+    </div>
+    <form th:action="@{/process_register}" method="post"  th:object="${user}">
+
+        <div>
+            <div class="form-group row">
+                <label>E-mail</label>
+                <input type="email" th:field="*{email}" required/>
+            </div>
+            <div class="form-group row">
+                <label>password</label>
+                <input type="password" th:field="*{password}" required minlength="2" maxlength="20"/>
+            </div>
+            <div class="form-group row">
+                <label>firstname</label>
+                <input type="text"th:field="*{firstname}" required minlength="2" maxlength="20"/>
+            </div>
+            <div class="form-group row">
+                <label>lastname</label>
+                <input type="text" th:field="*{lastname}" required minlength="2" maxlength="20"/>
+            </div>
+            <div>
+                <button type="submit">sign up</button>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

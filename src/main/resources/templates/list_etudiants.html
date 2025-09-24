@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Étudiants</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" />
+</head>
+<body>
+<div class="container text-center">
+    <div>
+        <h1>Liste des Étudiants</h1>
+        <a th:href="@{/logout}" class="btn btn-danger float-end">Déconnexion</a>
+    </div>
+
+    <div class="mb-3">
+        Nombre total d'Étudiant : <span th:text="${etudiantCount}"></span>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>Nom Complet</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Date de Création</th> </tr>
+        </thead>
+        <tbody>
+        <tr th:each="etudiant : ${etudiantList}">
+            <td th:text="${etudiant.nomComplet}">Nom</td>
+            <td th:text="${etudiant.email}">Email</td>
+            <td th:text="${etudiant.role}">Rôle</td>
+            <td th:text="${etudiant.creationDate}">Date</td> </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Modifier une Classe</title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+<div class="container my-5">
+  <h2>Modifier la classe</h2>
+  <form th:action="@{/admin/modifier_classe/{id}(id=${classe.id})}" th:object="${classe}" method="post">
+    <div class="mb-3">
+      <label for="nomClasse" class="form-label">Nom de la Classe</label>
+      <input type="text" th:field="*{nomClasse}" class="form-control" id="nomClasse">
+    </div>
+    <div class="mb-3">
+      <label for="effectifs" class="form-label">Effectifs</label>
+      <input type="number" th:field="*{effectifs}" class="form-control" id="effectifs">
+    </div>
+    <div class="mb-3">
+      <label for="enseignant" class="form-label">Enseignant Responsable</label>
+      <select th:field="*{enseignant}" class="form-control" id="enseignant">
+        <option th:each="enseignant : ${enseignants}"
+                th:value="${enseignant.id}"
+                th:text="${enseignant.firstname + ' ' + enseignant.lastname}">
+        </option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Mettre à jour la classe</button>
+  </form>
+</div>
+</body>
+</html>

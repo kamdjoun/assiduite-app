@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ma Classe</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+<div class="container my-5">
+    <h2>Bonjour <span th:text="${classe.enseignant.firstname}"></span>, bienvenue dans votre classe.</h2>
+    <h3>Classe : <span th:text="${classe.nomClasse}"></span></h3>
+    <p>Effectifs de la classe : <span th:text="${classe.effectifs}"></span></p>
+
+    <h4>Ajouter des étudiants</h4>
+    <p>C'est ici que vous pourrez gérer la liste de vos étudiants.</p>
+
+</div>
+</body>
+</html>

@@ -35,6 +35,9 @@ public class AppController {
     @Autowired
     private ClasseRepository classeRepos;
 
+    @Autowired
+    private ArduinoService arduinoService;
+
     @GetMapping("/enseignant/classe/{classeId}")
     @PreAuthorize("hasRole('ENSEIGNANT')")
     public String showEnseignantClasse(@PathVariable("classeId") Long classeId, Model model) {
@@ -77,12 +80,53 @@ public class AppController {
             return "redirect:/enseignant/classe/" + classeId;
         }
 
-        // Affecter l'étudiant à la classe et sauvegarder
+        // Affecter l'étudiant à la classe et sauvegarder (l'étudiant est maintenant lié)
         etudiant.setClasse(classe);
         etudiantRepo.save(etudiant);
 
-        ra.addFlashAttribute("success", "L'étudiant a été ajouté avec succès à la classe.");
-        return "redirect:/enseignant/classe/" + classeId;
+        // Démarrer la capture de l'empreinte
+        boolean captureStarted = arduinoService.startFingerprintCapture(etudiantId);
+
+        if (captureStarted) {
+            // --- MODIFICATION CRUCIALE ---
+            // On ne redirige PAS vers la page de classe.
+            // On redirige vers la page de statut d'attente, en passant l'ID.
+            ra.addFlashAttribute("etudiantIdToEnroll", etudiantId);
+            ra.addFlashAttribute("classeId", classeId); // Pour réutiliser dans la page de statut
+            ra.addFlashAttribute("info", "Capture en cours. Veuillez suivre les instructions du capteur.");
+
+            // Redirection vers le nouvel endpoint de statut
+            return "redirect:/enseignant/classe/" + classeId + "/capture-en-cours";
+
+        } else {
+            // S'il y a une erreur technique (port occupé, etc.), on affiche l'erreur
+            ra.addFlashAttribute("error", "Erreur: Une capture d'empreinte est déjà en cours ou le service Arduino est indisponible.");
+            return "redirect:/enseignant/classe/" + classeId;
+        }
+    }
+
+
+    // --- NOUVELLE MÉTHODE ---
+// Cette méthode gère l'affichage de la page d'attente/statut de la capture
+    @GetMapping("/enseignant/classe/{classeId}/capture-en-cours")
+    @PreAuthorize("hasRole('ENSEIGNANT')")
+    public String showCaptureStatus(@PathVariable("classeId") Long classeId,
+                                    @ModelAttribute("etudiantIdToEnroll") Long etudiantId,
+                                    @ModelAttribute("info") String infoMessage,
+                                    Model model) {
+
+        // Si l'attribut 'etudiantIdToEnroll' n'existe pas (accès direct à l'URL), on redirige
+        if (etudiantId == null) {
+            return "redirect:/enseignant/classe/" + classeId;
+        }
+
+        // On passe les infos au template
+        model.addAttribute("classeId", classeId);
+        model.addAttribute("etudiantId", etudiantId);
+        model.addAttribute("info", infoMessage);
+
+        // Le template sera capture_status.html
+        return "capture_status";
     }
 
     // Dans AppController.java

@@ -23,6 +23,11 @@ public class User {
     private String lastname;
     @Column(length = 20)
     private String role;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Etudiant etudiant;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Enseignant enseignant;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp // Annotation qui définit automatiquement la date de création

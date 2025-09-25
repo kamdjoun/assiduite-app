@@ -11,8 +11,7 @@ public class Etudiant {
     private Long id;
 
     // Colonne pour stocker l'empreinte digitale
-    @Lob // Indique que c'est un Large Object (BLOB)
-    @Column(name = "empreinte_digitale")
+    @Column(name = "empreinte_digitale", columnDefinition = "LONGBLOB")
     private byte[] empreinteDigitale;
 
     // Liaison avec la table User
